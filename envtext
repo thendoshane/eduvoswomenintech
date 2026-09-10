@@ -1,0 +1,18 @@
+# The app works immediately in local demo mode when this is false.
+VITE_USE_FIREBASE=true
+
+# Set true after creating the Firebase project.
+# VITE_USE_FIREBASE=true
+
+VITE_FIREBASE_API_KEY=AIzaSyDsfaFYFraXsjNWDKjjgHa6gz22Dw0QOYM
+VITE_FIREBASE_AUTH_DOMAIN=wit2026.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=wit2026
+VITE_FIREBASE_APP_ID=1:497708059324:web:fa15dd69f1e98d84addeb9
+VITE_FIREBASE_MESSAGING_SENDER_ID=497708059324
+
+# Stable ID used under /events/{eventId}
+VITE_EVENT_ID=women-in-tech-summit
+
+
+  #storageBucket: "wit2026.firebasestorage.app",
+  #measurementId: "G-TMFNLD2ZRT"

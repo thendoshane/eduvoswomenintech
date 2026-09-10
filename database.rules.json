@@ -1,0 +1,62 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "events": {
+      "$eventId": {
+        "live": {
+          ".read": true,
+          ".write": "auth != null && auth.token.firebase.sign_in_provider == 'password'"
+        },
+
+        "qna": {
+          ".read": true,
+          "$sessionId": {
+            ".write": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+            ".validate": "!newData.exists() || (newData.hasChildren(['enabled']) && newData.child('enabled').isBoolean())"
+          }
+        },
+
+        "notice": {
+          ".read": true,
+          ".write": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+          ".validate": "!newData.exists() || (newData.hasChildren(['message', 'active']) && newData.child('message').isString() && newData.child('message').val().length <= 300 && newData.child('active').isBoolean())"
+        },
+
+        "announcements": {
+          ".read": true,
+          "$announcementId": {
+            ".write": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+            ".validate": "!newData.exists() || (newData.hasChildren(['message', 'active']) && newData.child('message').isString() && newData.child('message').val().length <= 300 && newData.child('active').isBoolean())"
+          }
+        },
+
+        "questions": {
+          ".read": true,
+          "$sessionId": {
+            "$questionId": {
+              ".write": "(auth != null && auth.token.firebase.sign_in_provider == 'password') || (auth != null && auth.token.firebase.sign_in_provider == 'anonymous' && !data.exists() && root.child('events').child($eventId).child('qna').child($sessionId).child('enabled').val() == true && newData.child('userId').val() == auth.uid && newData.child('sessionId').val() == $sessionId && newData.child('text').isString() && newData.child('text').val().length >= 2 && newData.child('text').val().length <= 500 && newData.child('status').val() == 'visible' && newData.child('pinned').val() == false && newData.child('answered').val() == false && !newData.child('voters').exists())",
+              ".validate": "!newData.exists() || (newData.child('sessionId').isString() && newData.child('text').isString() && newData.child('text').val().length <= 500)",
+
+              "voters": {
+                "$uid": {
+                  ".write": "auth != null && auth.token.firebase.sign_in_provider == 'anonymous' && auth.uid == $uid && root.child('events').child($eventId).child('qna').child($sessionId).child('enabled').val() == true && root.child('events').child($eventId).child('questions').child($sessionId).child($questionId).child('status').val() == 'visible'",
+                  ".validate": "!newData.exists() || newData.val() == true"
+                }
+              }
+            }
+          }
+        },
+
+        "concerns": {
+          ".read": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+          "$concernId": {
+            ".write": "(auth != null && auth.token.firebase.sign_in_provider == 'password') || (auth != null && auth.token.firebase.sign_in_provider == 'anonymous' && !data.exists() && newData.child('userId').val() == auth.uid && newData.child('status').val() == 'new' && newData.child('category').isString() && newData.child('category').val().length <= 50 && newData.child('message').isString() && newData.child('message').val().length >= 3 && newData.child('message').val().length <= 700 && newData.child('contact').isString() && newData.child('contact').val().length <= 120)",
+            ".validate": "!newData.exists() || (newData.child('userId').isString() && newData.child('category').isString() && newData.child('message').isString() && newData.child('status').isString())"
+          }
+        }
+      }
+    }
+  }
+}

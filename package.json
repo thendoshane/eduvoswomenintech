@@ -1,0 +1,25 @@
+{
+  "name": "eduvos-women-in-tech-live",
+  "private": true,
+  "version": "4.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy:rules": "firebase deploy --only firestore:rules,database",
+    "deploy": "npm run build && firebase deploy --only firestore:rules,database,hosting",
+    "deploy:all": "npm run build && firebase deploy --only firestore:rules,database,hosting"
+  },
+  "dependencies": {
+    "firebase": "^12.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "qrcode.react": "^4.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.2",
+    "vite": "^7.1.4"
+  }
+}

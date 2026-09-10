@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+
+      match /sessions/{sessionId} {
+        allow read: if true;
+        allow create, update, delete: if isAdmin();
+      }
+
+      match /speakers/{speakerId} {
+        allow read: if true;
+        allow create, update, delete: if isAdmin();
+      }
+
+      match /feedback/{feedbackId} {
+        allow read: if isAdmin();
+        allow create: if signedIn()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5;
+        allow update, delete: if isAdmin();
+      }
+
+      match /concerns/{concernId} {
+        allow read: if isAdmin();
+        allow create: if signedIn()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.status == 'new'
+          && request.resource.data.category is string
+          && request.resource.data.category.size() <= 50
+          && request.resource.data.message is string
+          && request.resource.data.message.size() >= 3
+          && request.resource.data.message.size() <= 700
+          && request.resource.data.contact is string
+          && request.resource.data.contact.size() <= 120;
+        allow update, delete: if isAdmin();
+      }
+
+      // Legacy collections from version 1. Live Q&A and announcements now use Realtime Database.
+      match /questions/{questionId} {
+        allow read, create, update, delete: if isAdmin();
+      }
+
+      match /announcements/{announcementId} {
+        allow read, create, update, delete: if isAdmin();
+      }
+    }
+  }
+}
