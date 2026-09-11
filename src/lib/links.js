@@ -23,3 +23,20 @@ export function canEmbedStreamUrl(value=''){
     return true
   }catch{return false}
 }
+
+const HONORIFIC_RE=/^(?:(?:mr|mrs|ms|miss|dr|doctor|prof|professor)\.?\s+)+/i
+
+export function cleanPersonName(value=''){
+  return String(value||'').trim().replace(HONORIFIC_RE,'').trim()
+}
+
+export function speakerSlug(value=''){
+  const clean=cleanPersonName(value)
+  return clean
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/&/g,' and ')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'') || 'speaker'
+}

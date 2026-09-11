@@ -4,8 +4,8 @@ import { useAppData } from '../context'
 import Icon from '../components/Icon'
 import SessionCard from '../components/SessionCard'
 import SpeakerAvatar from '../components/SpeakerAvatar'
-import { formatDate, formatTime } from '../lib/utils'
-import { normalizeExternalUrl } from '../lib/links'
+import { formatDate, formatTime, sessionStartValue, sessionEndValue } from '../lib/utils'
+import { normalizeExternalUrl, speakerSlug } from '../lib/links'
 
 const DEFAULT_INTRO = `Women in IT Summit is a premier platform designed to inspire, empower, and connect women across the technology ecosystem around South Africa. The summit seeks to address the gender gap in technology by creating opportunities for learning, mentorship, networking, leadership development, and industry collaboration. The event will bring together students, academics, technology professionals, entrepreneurs, executives, policymakers, and industry leaders to engage in meaningful conversations about the future of technology and the critical role women play in driving innovation.\n\nThrough keynote presentations, panel discussions, mentorship sessions, and networking opportunities, participants will gain valuable insights, practical skills, and professional connections that support their growth within the digital economy as females.`
 
@@ -38,10 +38,10 @@ export default function HomePage() {
 
       {liveSession ? (
         <section className="live-card eduvos-live-card">
-          <div className="live-card-top"><span className="status-pill live large"><i/> Live now</span><span>{formatTime(liveSession.startAt)}–{formatTime(liveSession.endAt)}</span></div>
+          <div className="live-card-top"><span className="status-pill live large"><i/> Live now</span><span>{formatTime(sessionStartValue(liveSession))}–{formatTime(sessionEndValue(liveSession))}</span></div>
           <h2>{liveSession.title}</h2>
           {liveSession.room && <p className="muted live-room"><Icon name="pin" size={16}/> {liveSession.room}</p>}
-          {liveSpeakers.length > 0 && <div className="live-speakers">{liveSpeakers.map(s => <Link to={`/speakers/${s.id}`} className="live-speaker" key={s.id}><SpeakerAvatar speaker={s}/><div><strong>{s.name}</strong><span>{s.category?`${s.category} · `:''}{s.title}{s.organisation ? ` · ${s.organisation}` : ''}</span></div></Link>)}</div>}
+          {liveSpeakers.length > 0 && <div className="live-speakers">{liveSpeakers.map(s => <Link to={`/speakers/${speakerSlug(s.name)}`} className="live-speaker" key={s.id}><SpeakerAvatar speaker={s}/><div><strong>{s.name}</strong><span>{s.category?`${s.category} · `:''}{s.title}{s.organisation ? ` · ${s.organisation}` : ''}</span></div></Link>)}</div>}
           <div className="button-row"><Link className="btn btn-white" to={`/session/${liveSession.id}`}>View session</Link>{liveSession.qnaEnabled && <Link className="btn btn-outline-white" to={`/qna/${liveSession.id}`}>Live Q&A</Link>}</div>
         </section>
       ) : (

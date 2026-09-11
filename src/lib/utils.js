@@ -7,10 +7,33 @@ export function toLocalInputValue(value) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+export function sessionStartValue(session) {
+  if (!session || typeof session !== 'object') return ''
+  return session.startAt || session.startTime || ''
+}
+
+export function sessionEndValue(session) {
+  if (!session || typeof session !== 'object') return ''
+  return session.endAt || session.endTime || ''
+}
+
+function asDate(value) {
+  if (!value) return null
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
+  const raw = String(value).trim()
+  if (/^\d{1,2}:\d{2}$/.test(raw)) {
+    const [h, m] = raw.split(':').map(Number)
+    const d = new Date()
+    d.setHours(h, m, 0, 0)
+    return d
+  }
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
 export function formatTime(value) {
-  if (!value) return ''
-  const d = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
+  const d = asDate(value)
+  if (!d) return ''
   return new Intl.DateTimeFormat('en-ZA', { hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
 }
 
@@ -29,11 +52,14 @@ export function compactDate(value) {
 }
 
 export function sessionState(session, now = new Date(), liveState = {}) {
-  if (!session) return 'upcoming'
+  if (!session || typeof session !== 'object') return 'upcoming'
   if (liveState?.forcedSessionId === session.id) return 'live'
   if (session.manualStatus && session.manualStatus !== 'auto') return session.manualStatus
-  const start = new Date(session.startAt)
-  const end = new Date(session.endAt)
+
+  const start = asDate(sessionStartValue(session))
+  const end = asDate(sessionEndValue(session))
+  if (!start || !end) return 'upcoming'
+
   if (now >= start && now <= end) return 'live'
   if (now > end) return 'finished'
   const mins = (start - now) / 60000
@@ -42,27 +68,41 @@ export function sessionState(session, now = new Date(), liveState = {}) {
 }
 
 export function getLiveSession(sessions, now = new Date(), liveState = {}) {
+  const safeSessions = Array.isArray(sessions) ? sessions.filter(s => s && typeof s === 'object') : []
   if (liveState?.forcedSessionId) {
-    const forcedRealtime = sessions.find(s => s.id === liveState.forcedSessionId)
+    const forcedRealtime = safeSessions.find(s => s.id === liveState.forcedSessionId)
     if (forcedRealtime) return forcedRealtime
   }
-  const forced = sessions.find(s => s.manualStatus === 'live')
+  const forced = safeSessions.find(s => s.manualStatus === 'live')
   if (forced) return forced
-  return sessions.find(s => sessionState(s, now, liveState) === 'live') || null
+  return safeSessions.find(s => sessionState(s, now, liveState) === 'live') || null
 }
 
 export function getNextSession(sessions, now = new Date()) {
-  return [...sessions]
-    .filter(s => !['cancelled', 'finished'].includes(sessionState(s, now)) && new Date(s.startAt) > now)
-    .sort((a, b) => new Date(a.startAt) - new Date(b.startAt))[0] || null
+  const safeSessions = Array.isArray(sessions) ? sessions.filter(s => s && typeof s === 'object') : []
+  return [...safeSessions]
+    .filter(s => {
+      const start = asDate(sessionStartValue(s))
+      return start && !['cancelled', 'finished'].includes(sessionState(s, now)) && start > now
+    })
+    .sort((a, b) => {
+      const av = asDate(sessionStartValue(a))?.getTime() ?? Number.MAX_SAFE_INTEGER
+      const bv = asDate(sessionStartValue(b))?.getTime() ?? Number.MAX_SAFE_INTEGER
+      return av - bv
+    })[0] || null
 }
 
 export function sortSessions(sessions) {
-  return [...sessions].sort((a, b) => new Date(a.startAt) - new Date(b.startAt))
+  const safeSessions = Array.isArray(sessions) ? sessions.filter(s => s && typeof s === 'object') : []
+  return [...safeSessions].sort((a, b) => {
+    const av = asDate(sessionStartValue(a))?.getTime() ?? Number.MAX_SAFE_INTEGER
+    const bv = asDate(sessionStartValue(b))?.getTime() ?? Number.MAX_SAFE_INTEGER
+    return av - bv
+  })
 }
 
 export function sortQuestions(questions) {
-  return [...questions].sort((a, b) => {
+  return [...(Array.isArray(questions) ? questions : [])].filter(Boolean).sort((a, b) => {
     if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1
     if ((b.voteCount || 0) !== (a.voteCount || 0)) return (b.voteCount || 0) - (a.voteCount || 0)
     return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
@@ -70,7 +110,7 @@ export function sortQuestions(questions) {
 }
 
 export function initials(name = '') {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map(v => v[0]).join('').toUpperCase() || 'SP'
+  return String(name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(v => v[0]).join('').toUpperCase() || 'SP'
 }
 
 export function slugId(prefix = 'item') {

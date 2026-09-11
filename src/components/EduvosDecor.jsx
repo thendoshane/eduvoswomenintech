@@ -6,5 +6,7 @@ export default function EduvosDecor(){
     <img className="decor decor-left-bottom" src="/brand/decor/eduvos-pattern-04.png" alt=""/>
     <img className="decor decor-right-top" src="/brand/decor/eduvos-pattern-02.svg" alt=""/>
     <img className="decor decor-right-mid" src="/brand/decor/eduvos-pattern-05.png" alt=""/>
+    <img className="decor decor-left-mid-mobile" src="/brand/decor/eduvos-pattern-05.png" alt=""/>
+    <img className="decor decor-right-bottom-mobile" src="/brand/decor/eduvos-pattern-04.png" alt=""/>
   </div>
 }

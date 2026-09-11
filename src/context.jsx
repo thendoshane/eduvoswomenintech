@@ -12,8 +12,8 @@ function readCache() {
 export function AppDataProvider({ children }) {
   const cached = readCache()
   const [event, setEvent] = useState(cached?.event || null)
-  const [sessions, setSessions] = useState(cached?.sessions || [])
-  const [speakers, setSpeakers] = useState(cached?.speakers || [])
+  const [sessions, setSessions] = useState(Array.isArray(cached?.sessions) ? cached.sessions.filter(Boolean) : [])
+  const [speakers, setSpeakers] = useState(Array.isArray(cached?.speakers) ? cached.speakers.filter(Boolean) : [])
   const [announcements, setAnnouncements] = useState(cached?.announcements || [])
   const [liveState, setLiveState] = useState(cached?.liveState || {})
   const [loading, setLoading] = useState(!cached)
@@ -22,8 +22,8 @@ export function AppDataProvider({ children }) {
   useEffect(() => {
     const unsub = subscribeCore(next => {
       if (next.event !== undefined) setEvent(next.event)
-      if (next.sessions) setSessions(next.sessions)
-      if (next.speakers) setSpeakers(next.speakers)
+      if (next.sessions) setSessions(Array.isArray(next.sessions) ? next.sessions.filter(Boolean) : [])
+      if (next.speakers) setSpeakers(Array.isArray(next.speakers) ? next.speakers.filter(Boolean) : [])
       if (next.announcements) setAnnouncements(next.announcements)
       if (next.liveState !== undefined) setLiveState(next.liveState || {})
       if (next.event) {
@@ -48,7 +48,7 @@ export function AppDataProvider({ children }) {
     [announcements]
   )
 
-  const speakerMap = useMemo(() => Object.fromEntries(speakers.map(s => [s.id, s])), [speakers])
+  const speakerMap = useMemo(() => Object.fromEntries((Array.isArray(speakers)?speakers:[]).filter(s=>s&&s.id).map(s => [s.id, s])), [speakers])
 
   const value = {
     event,

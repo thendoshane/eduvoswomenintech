@@ -129,7 +129,31 @@ img{max-width:100%;display:block}
 .stream-shell{background:#000;border-radius:24px;overflow:hidden;aspect-ratio:16/9;margin-bottom:18px}.stream-shell iframe{width:100%;height:100%;border:0}.stream-placeholder{background:var(--eduvos-navy);color:#fff;padding:60px 30px;border-radius:24px;text-align:center}.stream-placeholder h2{font-family:Georgia,serif;font-size:42px;margin:15px 0 8px}.stream-placeholder p{color:#d2dcea;margin-bottom:22px}
 .contacts-editor{margin-top:26px;padding-top:22px;border-top:1px solid #ddd}.contacts-editor-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.contacts-editor-head h2{font-family:Georgia,serif;font-weight:500;margin:4px 0 14px}.contact-editor-row{display:grid;grid-template-columns:1fr 1fr 1.2fr 1fr auto;gap:8px;margin-bottom:8px}.contact-editor-row input{border:1px solid #ddd;padding:10px;border-radius:9px}.contact-editor-row button{border:0;background:#fff}
 .friendly-error{background:#fff4f2;border:1px solid #e6b9b2;border-radius:12px;padding:14px 16px;margin:14px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.friendly-error strong{font-size:12px}.friendly-error span{font-size:11px;color:#6b4d48}.friendly-error button{margin-left:auto;border:0;background:var(--eduvos-navy);color:#fff;border-radius:999px;padding:8px 13px;font-size:10px;font-weight:800}.fatal-error-page{min-height:100vh;background:var(--eduvos-navy);display:grid;place-items:center;padding:20px}.fatal-error-card{max-width:620px;color:#fff}.fatal-error-card h1{font-family:Georgia,serif;font-size:54px}.admin-error-list{display:flex;flex-direction:column;gap:10px}.admin-error-card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px}.admin-error-card>div{display:flex;justify-content:space-between}.admin-error-card span{font-size:10px;color:#777}.admin-error-card p{font-size:13px}.admin-error-card pre{white-space:pre-wrap;font-size:10px;background:#f6f6f6;padding:10px}
-@media(max-width:1100px){.eduvos-decor{display:none}}@media(max-width:700px){.branded-hero{padding:26px 22px}.branded-speaker-card{grid-template-columns:110px 1fr auto!important;min-height:150px}.speaker-card-art{min-height:150px}.speaker-card-art .speaker-avatar{width:85px;height:85px}.speaker-card-copy{padding:14px}.speaker-card-copy h3{font-size:21px}.speaker-feature{grid-template-columns:1fr;padding:22px}.speaker-feature-photo{min-height:260px}.speaker-feature-photo .avatar-xl{width:210px;height:210px}.contact-grid{grid-template-columns:1fr}.qna-agenda-row{grid-template-columns:54px 1fr}.qna-agenda-row b{grid-column:2}.header-actions{align-items:flex-start;flex-direction:column}.contact-editor-row{grid-template-columns:1fr}.contact-editor-row button{justify-self:end}}
+/* Keep Eduvos decorative side artwork visible on tablets and phones.
+   It is scaled/offset instead of hidden so it never covers the content. */
+@media(max-width:1100px){
+  .eduvos-decor{display:block;inset:68px 0 70px;opacity:.95}
+  .decor-left-top{left:-72px;top:34px;width:138px}
+  .decor-left-bottom{left:-58px;bottom:82px;width:120px}
+  .decor-right-top{right:-70px;top:28px;width:140px}
+  .decor-right-mid{right:-58px;top:48%;width:118px}
+}
+@media(max-width:700px){
+  .eduvos-decor{display:block;inset:68px 0 68px;opacity:.9}
+  .decor-left-top{left:-50px;top:26px;width:96px}
+  .decor-left-bottom{left:-42px;bottom:92px;width:86px}
+  .decor-right-top{right:-48px;top:24px;width:96px}
+  .decor-right-mid{right:-42px;top:55%;width:86px}
+  .branded-hero{padding:26px 22px}.branded-speaker-card{grid-template-columns:110px 1fr auto!important;min-height:150px}.speaker-card-art{min-height:150px}.speaker-card-art .speaker-avatar{width:85px;height:85px}.speaker-card-copy{padding:14px}.speaker-card-copy h3{font-size:21px}.speaker-feature{grid-template-columns:1fr;padding:22px}.speaker-feature-photo{min-height:260px}.speaker-feature-photo .avatar-xl{width:210px;height:210px}.contact-grid{grid-template-columns:1fr}.qna-agenda-row{grid-template-columns:54px 1fr}.qna-agenda-row b{grid-column:2}.header-actions{align-items:flex-start;flex-direction:column}.contact-editor-row{grid-template-columns:1fr}.contact-editor-row button{justify-self:end}
+}
+@media(max-width:430px){
+  .eduvos-decor{opacity:.82}
+  .decor-left-top{left:-41px;top:18px;width:78px}
+  .decor-left-bottom{left:-35px;bottom:84px;width:72px}
+  .decor-right-top{right:-40px;top:20px;width:80px}
+  .decor-right-mid{right:-35px;top:58%;width:72px}
+}
+
 .branded-hero{background-image:linear-gradient(rgba(255,255,255,.94),rgba(255,255,255,.94)),url('/brand/decor/eduvos-pattern-03.png');background-size:cover;background-position:center}
 
 /* =========================================================
@@ -214,3 +238,47 @@ body{overscroll-behavior-y:none}
 .session-speaker-priority{margin:30px 0}.session-speaker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.session-speaker-card{display:grid;grid-template-columns:auto 1fr auto;gap:13px;align-items:center;padding:16px;border:1px solid #d8e0ea;border-radius:17px;background:#fff}.session-speaker-card strong{display:block;font-family:Georgia,serif;font-size:21px;font-weight:500;margin:3px 0}.session-speaker-card p{margin:0;color:#65748a;font-size:11px;line-height:1.45}.session-qna-priority{margin:26px 0;background:linear-gradient(135deg,var(--eduvos-navy),#244889);color:#fff;border-radius:22px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:20px}.session-qna-priority h2{font-family:Georgia,serif;font-size:32px;font-weight:500;margin:4px 0}.session-qna-priority p{margin:0;color:#dbe4f0;font-size:12px}.session-qna-priority .eyebrow{color:#fff}.session-qna-priority .status-pill{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35);color:#fff}.session-online-secondary{margin:28px 0 8px;padding:20px 0;border-top:1px solid #d8e0ea;display:flex;align-items:center;justify-content:space-between;gap:18px}.session-online-secondary h2{font-family:Georgia,serif;font-size:27px;font-weight:500;margin:3px 0}.session-online-secondary p{margin:0;color:#6d7b8e;font-size:11px}.btn-outline-navy{background:#fff;color:var(--eduvos-navy);border:1px solid var(--eduvos-navy)}
 @media(max-width:700px){.programme-session-actions{padding:0 8px 12px 61px;justify-content:flex-start;flex-wrap:wrap}.session-card .speaker-mini-row{display:flex!important}.speaker-mini-row>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}.session-speaker-grid{grid-template-columns:1fr}.session-qna-priority,.session-online-secondary{align-items:flex-start;flex-direction:column}.session-qna-priority .btn,.session-online-secondary .btn{width:100%;justify-content:center}}
 @media(max-width:430px){.programme-session-actions{padding-left:54px}.programme-action{font-size:9px;padding:7px 10px}.speaker-mini-row>span{max-width:120px}.session-speaker-card{padding:12px}.session-speaker-card strong{font-size:18px}.session-qna-priority{padding:19px}.session-qna-priority h2{font-size:28px}}
+
+/* v10: admin email relay diagnostics */
+.email-relay-card{display:grid;gap:16px;margin-bottom:18px}.email-relay-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.email-relay-head h2{margin:.2rem 0 0}.email-relay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.email-relay-grid>div{border:1px solid rgba(23,58,103,.18);border-radius:14px;padding:12px 14px;background:#fff;display:grid;gap:4px}.email-relay-grid span{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;font-weight:800}.email-relay-grid strong{overflow-wrap:anywhere}.warning-box{background:#fff7df;border:1px solid #e6c46c;color:#614d13;border-radius:12px;padding:12px 14px}.error-report-meta{display:flex;flex-wrap:wrap;gap:8px;margin:.5rem 0}.error-report-meta>span,.delivery-badge{font-size:.72rem;font-weight:800;border-radius:999px;padding:5px 9px;background:#eef2f7;color:#173a67}.delivery-badge.success{background:#e8f7ee;color:#166534}.delivery-badge.danger{background:#fff0f0;color:#991b1b}.delivery-badge.neutral{background:#f3f4f6;color:#4b5563}.admin-error-card .text-button{margin-top:8px}
+@media(max-width:720px){.email-relay-head{display:grid}.email-relay-head .row-actions{width:100%;display:grid;grid-template-columns:1fr}.email-relay-grid{grid-template-columns:1fr}}
+
+
+/* =========================================================
+   V11 FINAL: MOBILE/TABLET EDUVOS EDGE ART
+   Desktop artwork stays exactly as before. On smaller screens,
+   branded blue/gold artwork is allowed further into the white
+   breathing space so the Eduvos identity remains visible.
+   ========================================================= */
+.decor-left-mid-mobile,.decor-right-bottom-mobile{display:none}
+
+@media (max-width:900px){
+  .eduvos-decor{opacity:1;overflow:hidden}
+  .decor-left-top{left:-34px!important;top:34px!important;width:132px!important}
+  .decor-right-top{right:-34px!important;top:30px!important;width:132px!important}
+  .decor-left-bottom{left:-30px!important;bottom:105px!important;width:118px!important}
+  .decor-right-mid{right:-30px!important;top:46%!important;width:116px!important}
+  .decor-left-mid-mobile,.decor-right-bottom-mobile{display:block}
+  .decor-left-mid-mobile{left:-42px;top:31%;width:108px;opacity:.82;transform:rotate(180deg)}
+  .decor-right-bottom-mobile{right:-38px;bottom:16%;width:110px;opacity:.88}
+}
+
+@media (max-width:700px){
+  .eduvos-decor{inset:68px 0 68px!important;opacity:.98!important}
+  .decor-left-top{left:-22px!important;top:22px!important;width:100px!important}
+  .decor-right-top{right:-22px!important;top:22px!important;width:100px!important}
+  .decor-left-bottom{left:-18px!important;bottom:88px!important;width:94px!important}
+  .decor-right-mid{right:-18px!important;top:50%!important;width:94px!important}
+  .decor-left-mid-mobile{left:-28px;top:30%;width:92px;opacity:.8}
+  .decor-right-bottom-mobile{right:-25px;bottom:18%;width:96px;opacity:.9}
+}
+
+@media (max-width:430px){
+  .eduvos-decor{opacity:.96!important}
+  .decor-left-top{left:-14px!important;top:16px!important;width:84px!important}
+  .decor-right-top{right:-14px!important;top:18px!important;width:84px!important}
+  .decor-left-bottom{left:-12px!important;bottom:78px!important;width:80px!important}
+  .decor-right-mid{right:-12px!important;top:52%!important;width:80px!important}
+  .decor-left-mid-mobile{left:-20px;top:31%;width:78px;opacity:.78}
+  .decor-right-bottom-mobile{right:-18px;bottom:19%;width:82px;opacity:.88}
+}

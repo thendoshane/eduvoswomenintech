@@ -2,10 +2,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import Icon from './Icon'
 import SpeakerAvatar from './SpeakerAvatar'
-import { formatTime, sessionState } from '../lib/utils'
+import { formatTime, sessionState, sessionStartValue, sessionEndValue } from '../lib/utils'
 import { normalizeExternalUrl } from '../lib/links'
 
-export default function SessionCard({ session, speakerMap, now = new Date(), liveState = {}, compact = false, event = null, showActions = false }) {
+export default function SessionCard({ session, speakerMap = {}, now = new Date(), liveState = {}, compact = false, event = null, showActions = false }) {
+  if (!session || typeof session !== 'object') return null
   const state = sessionState(session, now, liveState)
   const speakers = (session.speakerIds || []).map(id => speakerMap[id]).filter(Boolean)
   const join = normalizeExternalUrl(session.streamUrl || event?.streamUrl || '')
@@ -13,8 +14,8 @@ export default function SessionCard({ session, speakerMap, now = new Date(), liv
   const card = (
     <Link to={`/session/${session.id}`} className={`session-card ${compact ? 'compact' : ''} state-${state}`}>
       <div className="session-time">
-        <strong>{formatTime(session.startAt)}</strong>
-        <span>{formatTime(session.endAt)}</span>
+        <strong>{formatTime(sessionStartValue(session))}</strong>
+        <span>{formatTime(sessionEndValue(session))}</span>
       </div>
       <div className="session-main">
         <div className="session-meta-row">
