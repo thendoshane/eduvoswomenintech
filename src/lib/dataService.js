@@ -210,10 +210,28 @@ export async function reportError(error, context='application', extra={}) {
     const r = push(liveRef('errorReports'))
     await setRealtime(r, payload)
   } catch { /* avoid error-report loops */ }
-  const endpoint = String(import.meta.env.VITE_ERROR_REPORT_ENDPOINT || '').trim()
+  const endpoint = String(import.meta.env.VITE_RESEND_ENDPOINT || import.meta.env.VITE_ERROR_REPORT_ENDPOINT || '').trim()
   if (endpoint) {
-    try { await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,to:import.meta.env.VITE_ERROR_REPORT_EMAIL||'thendo.siphuma@eduvos.com'})}) } catch { /* RTDB remains the fallback */ }
+    try {
+      await fetch(endpoint,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({kind:'error',...payload})
+      })
+    } catch { /* RTDB remains the fallback */ }
   }
+}
+
+export async function sendContactEmail({to,contactName,subject,where,message,replyTo}) {
+  const endpoint = String(import.meta.env.VITE_RESEND_ENDPOINT || '').trim()
+  if (!endpoint) throw new Error('EMAIL_SERVICE_NOT_CONFIGURED')
+  const response = await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({kind:'contact',to,contactName,subject,where,message,replyTo})
+  })
+  if (!response.ok) throw new Error('EMAIL_SEND_FAILED')
+  return response.json().catch(()=>({ok:true}))
 }
 
 export function subscribeErrorReports(callback) {
