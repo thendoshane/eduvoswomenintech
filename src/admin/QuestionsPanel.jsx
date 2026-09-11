@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useAppData } from '../context'
-import { deleteQuestion, setSessionQnaEnabled, updateQuestionAdmin } from '../lib/dataService'
+import { deleteQuestion, setSessionQnaEnabled, updateQuestionAdmin, friendlyErrorMessage, reportError } from '../lib/dataService'
 import { sortQuestions } from '../lib/utils'
 
 export default function QuestionsPanel({ questions }) {
@@ -12,7 +12,7 @@ export default function QuestionsPanel({ questions }) {
 
   async function patch(question,p){
     try{await updateQuestionAdmin(question.sessionId,question.id,p)}
-    catch(err){alert(err.message||'Could not update question.')}
+    catch(err){alert(friendlyErrorMessage(err)); reportError(err,'admin-question-update').catch(()=>{})}
   }
 
   async function remove(question){
@@ -22,7 +22,7 @@ export default function QuestionsPanel({ questions }) {
   async function toggleQna(session){
     setBusyId(session.id)
     try{await setSessionQnaEnabled(session.id,!session.qnaEnabled)}
-    catch(err){alert(err.message||'Could not change Q&A status.')}
+    catch(err){alert(friendlyErrorMessage(err)); reportError(err,'admin-qna-toggle').catch(()=>{})}
     finally{setBusyId('')}
   }
 

@@ -5,7 +5,7 @@ import { loadStarterContent } from '../lib/dataService'
 import Icon from '../components/Icon'
 import { formatTime } from '../lib/utils'
 
-export default function OverviewPanel({ questions, concerns, setTab }) {
+export default function OverviewPanel({ questions, concerns, feedback=[], setTab }) {
   const { event, liveSession, nextSession, sessions, speakers } = useAppData()
   const visibleQuestions = questions.filter(q => q.status !== 'hidden')
   const newConcerns = concerns.filter(c => (c.status || 'new') === 'new')
@@ -17,16 +17,16 @@ export default function OverviewPanel({ questions, concerns, setTab }) {
         <button onClick={() => setTab('programme')}><span>Sessions</span><strong>{sessions.length}</strong></button>
         <button onClick={() => setTab('speakers')}><span>Speakers</span><strong>{speakers.length}</strong></button>
         <button onClick={() => setTab('questions')}><span>Live questions</span><strong>{visibleQuestions.length}</strong></button>
-        <button onClick={() => setTab('announcements')}><span>Notification</span><strong>{event?.liveNotice?.active ? 1 : 0}</strong></button>
         <button onClick={() => setTab('concerns')}><span>New concerns</span><strong>{newConcerns.length}</strong></button>
+        <button onClick={() => setTab('feedback')}><span>Feedback</span><strong>{feedback.length}</strong></button>
       </div>
 
-      {sessions.length === 0 && <section className="admin-card" style={{marginBottom:16}}><h2>Start with sample content</h2><p>Load editable starter sessions, speakers and an announcement, then replace them with the real event details.</p><button className="btn btn-black" onClick={()=>loadStarterContent()}>Load starter content</button></section>}
+      {sessions.length === 0 && <section className="admin-card" style={{marginBottom:16}}><h2>Start with sample content</h2><button className="btn btn-black" onClick={()=>loadStarterContent()}>Load starter content</button></section>}
 
       <div className="admin-two-col">
         <section className="admin-card dark-card">
           <div className="admin-card-label"><span className="status-pill live"><i/> Live now</span></div>
-          {liveSession ? <><h2>{liveSession.title}</h2><p>{formatTime(liveSession.startAt)}–{formatTime(liveSession.endAt)} · {liveSession.room || 'Venue'}</p><button className="btn btn-white" onClick={() => setTab('programme')}>Manage session</button></> : <><h2>No active session</h2><p>The system will mark a session live automatically based on its time.</p><button className="btn btn-white" onClick={() => setTab('programme')}>Open programme</button></>}
+          {liveSession ? <><h2>{liveSession.title}</h2><p>{formatTime(liveSession.startAt)}–{formatTime(liveSession.endAt)} · {liveSession.room || 'Venue'}</p><button className="btn btn-white" onClick={() => setTab('programme')}>Manage session</button></> : <><h2>No active session</h2><p>The next scheduled session will appear here automatically.</p><button className="btn btn-white" onClick={() => setTab('programme')}>Open programme</button></>}
         </section>
         <section className="admin-card">
           <span className="small-label">Up next</span>

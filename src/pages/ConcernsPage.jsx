@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../components/Icon'
-import { createConcern } from '../lib/dataService'
+import FriendlyError from '../components/FriendlyError'
+import { createConcern, friendlyErrorMessage, reportError } from '../lib/dataService'
 
 const categories = ['Programme', 'Technical', 'Facilities', 'Safety', 'Accessibility', 'Other']
 
@@ -23,7 +24,7 @@ export default function ConcernsPage() {
       setContact('')
       setSent(true)
     } catch (err) {
-      setError(err.message || 'Could not send your concern.')
+      setError(friendlyErrorMessage(err)); reportError(err,'concern-submit').catch(()=>{})
     } finally {
       setBusy(false)
     }
@@ -73,7 +74,7 @@ export default function ConcernsPage() {
           />
 
           <p className="privacy-note">Your attendee name is not displayed. Contact details are optional and are visible only to event admins.</p>
-          {error && <div className="error-box">{error}</div>}
+          <FriendlyError error={error ? new Error(error) : null} context="concern-submit" message={error || 'The concern could not be sent.'}/>
           <button className="btn btn-black full" disabled={busy || message.trim().length < 3}>{busy ? 'Sending…' : 'Send concern'}</button>
         </form>
       )}

@@ -4,6 +4,8 @@ import { AppDataProvider, useAppData } from './context'
 import TopBar from './components/TopBar'
 import BottomNav from './components/BottomNav'
 import Loading from './components/Loading'
+import ErrorBoundary from './components/ErrorBoundary'
+import EduvosDecor from './components/EduvosDecor'
 import HomePage from './pages/HomePage'
 import ProgrammePage from './pages/ProgrammePage'
 import SpeakersPage from './pages/SpeakersPage'
@@ -14,15 +16,19 @@ import InfoPage from './pages/InfoPage'
 import AdminPage from './pages/AdminPage'
 import ConcernsPage from './pages/ConcernsPage'
 import NotificationBanner from './components/NotificationBanner'
+import LogsPage from './pages/LogsPage'
 
 function PublicShell() {
   const { loading } = useAppData()
   const location = useLocation()
   if (loading) return <Loading />
   const isAdmin = location.pathname.startsWith('/admin')
+  const isLogs = location.pathname.startsWith('/logs')
   if (isAdmin) return <AdminPage />
+  if (isLogs) return <LogsPage />
   return (
-    <div className="app-shell">
+    <div className="app-shell branded-app">
+      <EduvosDecor/>
       <TopBar />
       <NotificationBanner />
       <Routes>
@@ -43,11 +49,5 @@ function PublicShell() {
 }
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <AppDataProvider>
-        <PublicShell />
-      </AppDataProvider>
-    </BrowserRouter>
-  )
+  return <ErrorBoundary><BrowserRouter><AppDataProvider><PublicShell /></AppDataProvider></BrowserRouter></ErrorBoundary>
 }

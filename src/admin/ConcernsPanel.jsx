@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import Icon from '../components/Icon'
-import { deleteConcern, updateConcernAdmin } from '../lib/dataService'
+import { deleteConcern, updateConcernAdmin, friendlyErrorMessage, reportError } from '../lib/dataService'
 
 function formatWhen(value) {
   if (!value) return ''
@@ -17,13 +17,13 @@ export default function ConcernsPanel({ concerns }) {
 
   async function patch(item, values) {
     try { await updateConcernAdmin(item.id, values) }
-    catch (err) { alert(err.message || 'Could not update concern.') }
+    catch (err) { alert(friendlyErrorMessage(err)); reportError(err,'admin-concern-update').catch(()=>{}) }
   }
 
   async function remove(item) {
     if (!confirm('Delete this concern permanently?')) return
     try { await deleteConcern(item.id) }
-    catch (err) { alert(err.message || 'Could not delete concern.') }
+    catch (err) { alert(friendlyErrorMessage(err)); reportError(err,'admin-concern-delete').catch(()=>{}) }
   }
 
   return (

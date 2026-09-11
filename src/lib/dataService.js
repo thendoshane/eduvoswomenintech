@@ -95,6 +95,39 @@ function childCollection(name) { return collection(db, 'events', eventId, name) 
 function liveBase(path = '') { return `events/${eventId}${path ? `/${path}` : ''}` }
 function liveRef(path = '') { return dbRef(rtdb, liveBase(path)) }
 
+
+async function writeAudit(action, entity, entityId = '', summary = '', details = {}) {
+  const payload = {
+    action: String(action || 'change').slice(0, 80),
+    entity: String(entity || 'system').slice(0, 80),
+    entityId: String(entityId || '').slice(0, 160),
+    summary: String(summary || '').slice(0, 500),
+    details: JSON.stringify(details || {}).slice(0, 1800),
+    adminUid: firebaseEnabled ? (auth.currentUser?.uid || '') : 'local-admin',
+    adminEmail: firebaseEnabled ? (auth.currentUser?.email || '') : 'admin@eduvos.local',
+    createdAt: firebaseEnabled ? serverTimestamp() : nowIso()
+  }
+  if (!firebaseEnabled) {
+    const data = ensureLocalData()
+    data.auditLogs ||= []
+    data.auditLogs.push({ id: slugId('log'), ...payload })
+    saveLocal(data)
+    return
+  }
+  if (!auth.currentUser || auth.currentUser.isAnonymous) return
+  try { await setRealtime(push(liveRef('auditLogs')), payload) } catch { /* audit must not block the live event */ }
+}
+
+export function subscribeAuditLogs(callback) {
+  if (!firebaseEnabled) {
+    const emit = () => callback(clone(ensureLocalData().auditLogs || []).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)))
+    emit(); window.addEventListener(CHANGE_EVENT, emit); return () => window.removeEventListener(CHANGE_EVENT, emit)
+  }
+  return onValue(liveRef('auditLogs'), snap => {
+    callback(realtimeList(snap.val()).sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0)))
+  }, () => callback([]))
+}
+
 function realtimeList(value) {
   if (!value || typeof value !== 'object') return []
   return Object.entries(value).map(([id, item]) => ({ id, ...(item || {}) }))
@@ -143,6 +176,51 @@ export function getFirebaseDiagnostics() {
     databaseUrl: realtimeDatabaseUrl || 'default database URL',
     initError: firebaseInitError || ''
   }
+}
+
+
+export function friendlyErrorMessage(error) {
+  const code = error?.code || ''
+  const message = String(error?.message || '')
+  if (code.includes('auth/') || message.includes('auth/')) return 'We could not complete the sign-in. Please check your details and try again.'
+  if (code === 'permission-denied' || code === 'PERMISSION_DENIED' || message.toLowerCase().includes('permission')) return 'This action is not available right now. Please try again or report the issue.'
+  if (message === 'POPUP_BLOCKED') return 'Your browser blocked the programme download window. Allow pop-ups for this site and try again.'
+  if (message.toLowerCase().includes('network')) return 'The connection was interrupted. Please check your internet connection and try again.'
+  return 'Something went wrong. Please try again. If it continues, report the issue to the event team.'
+}
+
+export async function reportError(error, context='application', extra={}) {
+  const technicalMessage = String(error?.message || error || 'Unknown error').slice(0, 1200)
+  const payload = {
+    context: String(context || 'application').slice(0, 80),
+    friendlyMessage: friendlyErrorMessage(error),
+    technicalMessage,
+    code: String(error?.code || '').slice(0, 120),
+    url: typeof window !== 'undefined' ? window.location.href.slice(0, 500) : '',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : '',
+    extra: JSON.stringify(extra || {}).slice(0, 1200),
+    createdAt: firebaseEnabled ? serverTimestamp() : nowIso()
+  }
+  if (!firebaseEnabled) {
+    const data = ensureLocalData(); data.errorReports ||= []; data.errorReports.push({id:slugId('error'),...payload}); saveLocal(data); return
+  }
+  try {
+    const user = auth.currentUser || (await signInAnonymously(auth)).user
+    payload.userId = user.uid
+    const r = push(liveRef('errorReports'))
+    await setRealtime(r, payload)
+  } catch { /* avoid error-report loops */ }
+  const endpoint = String(import.meta.env.VITE_ERROR_REPORT_ENDPOINT || '').trim()
+  if (endpoint) {
+    try { await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,to:import.meta.env.VITE_ERROR_REPORT_EMAIL||'thendo.siphuma@eduvos.com'})}) } catch { /* RTDB remains the fallback */ }
+  }
+}
+
+export function subscribeErrorReports(callback) {
+  if (!firebaseEnabled) {
+    const emit=()=>callback(clone(ensureLocalData().errorReports||[])); emit(); window.addEventListener(CHANGE_EVENT,emit); return()=>window.removeEventListener(CHANGE_EVENT,emit)
+  }
+  return onValue(liveRef('errorReports'),snap=>callback(realtimeList(snap.val()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))))
 }
 
 export function subscribeRealtimeConnection(callback) {
@@ -297,6 +375,26 @@ export function subscribeConcerns(callback) {
   })
 }
 
+export function subscribePublicFeedback(callback) {
+  if (!firebaseEnabled) {
+    const emit = () => callback(clone(ensureLocalData().feedback || []).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)))
+    emit()
+    window.addEventListener(CHANGE_EVENT, emit)
+    return () => window.removeEventListener(CHANGE_EVENT, emit)
+  }
+
+  return onSnapshot(childCollection('publicFeedback'), snap => {
+    callback(snap.docs.map(snapToItem).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)))
+  }, error => {
+    console.error('Feedback listener failed:', error)
+    callback([])
+  })
+}
+
+export function subscribeFeedback(callback) {
+  return subscribePublicFeedback(callback)
+}
+
 export async function ensureAttendeeAuth() {
   if (!firebaseEnabled) return { uid: localUserId(), isAnonymous: true }
   if (auth.currentUser) return auth.currentUser
@@ -357,6 +455,7 @@ export async function loginAdmin(email, password) {
     throw new Error(`The account signed in, but it is not fully configured as an admin. ${verification.reason}`)
   }
   syncRealtimeDefaults().catch(() => {})
+  await writeAudit('login','admin',result.user.uid,`Admin signed in: ${result.user.email || ''}`)
   return result.user
 }
 
@@ -366,6 +465,7 @@ export async function logoutAdmin() {
     window.dispatchEvent(new CustomEvent('wit-admin-auth'))
     return
   }
+  await writeAudit('logout','admin',auth.currentUser?.uid || '',`Admin signed out: ${auth.currentUser?.email || ''}`)
   await firebaseSignOut(auth)
 }
 
@@ -437,8 +537,8 @@ export async function toggleVote(question) {
 }
 
 export async function submitFeedback(rating, comment = '') {
-  const user = await ensureAttendeeAuth()
-  const payload = { userId: user.uid, rating: Number(rating), comment: comment.trim().slice(0, 500), createdAt: nowIso() }
+  await ensureAttendeeAuth()
+  const payload = { rating: Number(rating), comment: comment.trim().slice(0, 500), createdAt: nowIso() }
   if (!firebaseEnabled) {
     const data = ensureLocalData()
     data.feedback ||= []
@@ -446,7 +546,7 @@ export async function submitFeedback(rating, comment = '') {
     saveLocal(data)
     return
   }
-  const feedbackRef = doc(childCollection('feedback'))
+  const feedbackRef = doc(childCollection('publicFeedback'))
   await setDoc(feedbackRef, payload)
 }
 
@@ -459,6 +559,7 @@ export async function saveEvent(values) {
     return
   }
   await setDoc(eventRef(), payload, { merge: true })
+  await writeAudit('update','event',eventId,'Updated event settings')
 }
 
 
@@ -478,6 +579,7 @@ export async function setSessionQnaEnabled(sessionId, enabled) {
     enabled: value,
     updatedAt: serverTimestamp()
   })
+  await writeAudit('update','qna',sessionId,`Q&A ${value ? 'opened' : 'closed'}`)
 }
 
 export async function saveSession(values) {
@@ -518,6 +620,7 @@ export async function saveSession(values) {
     }
   }
 
+  await writeAudit('save','session',id,`Saved session: ${values.title || id}`)
   return id
 }
 
@@ -538,6 +641,7 @@ export async function deleteSession(id) {
   if (stateSnap.val()?.forcedSessionId === id) {
     await updateRealtime(liveRef('live'), { forcedSessionId: null, mode: 'auto', updatedAt: serverTimestamp() })
   }
+  await writeAudit('delete','session',id,'Deleted session')
 }
 
 export async function saveSpeaker(values) {
@@ -553,6 +657,7 @@ export async function saveSpeaker(values) {
     return id
   }
   await setDoc(childRef('speakers', id), payload, { merge: true })
+  await writeAudit('save','speaker',id,`Saved speaker: ${values.name || id}`,{showOnPanel:values.showOnPanel!==false,category:values.category||'Speaker'})
   return id
 }
 
@@ -565,6 +670,7 @@ export async function deleteSpeaker(id) {
     return
   }
   await deleteDoc(childRef('speakers', id))
+  await writeAudit('delete','speaker',id,'Deleted speaker')
 }
 
 
@@ -607,6 +713,7 @@ export async function updateConcernAdmin(id, patch) {
   }
 
   await updateRealtime(liveRef(`concerns/${id}`), allowed)
+  await writeAudit('update','concern',id,`Concern marked ${allowed.status || 'updated'}`)
 }
 
 export async function deleteConcern(id) {
@@ -617,6 +724,7 @@ export async function deleteConcern(id) {
     return
   }
   await removeRealtime(liveRef(`concerns/${id}`))
+  await writeAudit('delete','concern',id,'Deleted concern')
 }
 
 export async function saveLiveNotice({ message = '', active = false }) {
@@ -634,6 +742,7 @@ export async function saveLiveNotice({ message = '', active = false }) {
   }
 
   await setRealtime(liveRef('notice'), payload)
+  await writeAudit('update','notice','live',payload.active ? `Published notice: ${payload.message}` : 'Hid live notice')
 }
 
 export async function saveAnnouncement(values) {
@@ -655,6 +764,7 @@ export async function saveAnnouncement(values) {
   }
 
   await updateRealtime(liveRef(`announcements/${id}`), payload)
+  await writeAudit('save','announcement',id,`Saved announcement: ${payload.message}`)
   return id
 }
 
@@ -666,6 +776,7 @@ export async function deleteAnnouncement(id) {
     return
   }
   await removeRealtime(liveRef(`announcements/${id}`))
+  await writeAudit('delete','announcement',id,'Deleted announcement')
 }
 
 export async function updateQuestionAdmin(sessionId, id, patch) {
@@ -677,6 +788,7 @@ export async function updateQuestionAdmin(sessionId, id, patch) {
     return
   }
   await updateRealtime(liveRef(`questions/${sessionId}/${id}`), { ...patch, updatedAt: serverTimestamp() })
+  await writeAudit('update','question',id,'Moderated Q&A question',{sessionId,...patch})
 }
 
 export async function deleteQuestion(sessionId, id) {
@@ -687,6 +799,7 @@ export async function deleteQuestion(sessionId, id) {
     return
   }
   await removeRealtime(liveRef(`questions/${sessionId}/${id}`))
+  await writeAudit('delete','question',id,'Deleted Q&A question',{sessionId})
 }
 
 export async function loadStarterContent() {
@@ -744,6 +857,7 @@ export async function loadStarterContent() {
   }
   if (Object.keys(questionUpdates).length) await updateRealtime(liveRef('questions'), questionUpdates)
   await updateRealtime(liveRef('live'), { forcedSessionId: null, mode: 'auto', updatedAt: serverTimestamp() })
+  await writeAudit('seed','system',eventId,'Loaded starter content')
 }
 
 export function getLocalAttendeeUid() {

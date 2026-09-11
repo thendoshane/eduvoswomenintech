@@ -40,6 +40,18 @@ service cloud.firestore {
         allow update, delete: if isAdmin();
       }
 
+      match /publicFeedback/{feedbackId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.comment is string
+          && request.resource.data.comment.size() <= 500
+          && request.resource.data.createdAt is string;
+        allow update, delete: if isAdmin();
+      }
+
       match /concerns/{concernId} {
         allow read: if isAdmin();
         allow create: if signedIn()

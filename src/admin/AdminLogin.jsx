@@ -1,19 +1,18 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import Brand from '../components/Brand'
-import { getFirebaseDiagnostics, isFirebaseMode, loginAdmin, modeLabel } from '../lib/dataService'
+import { isFirebaseMode, loginAdmin, friendlyErrorMessage, reportError } from '../lib/dataService'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const diagnostics = useMemo(() => getFirebaseDiagnostics(), [])
 
   async function submit(e) {
     e.preventDefault()
     setBusy(true); setError('')
     try { await loginAdmin(email, password) }
-    catch (err) { setError(err.message || 'Could not sign in.') }
+    catch (err) { setError(friendlyErrorMessage(err)); reportError(err,'admin-login').catch(()=>{}) }
     finally { setBusy(false) }
   }
 
@@ -28,17 +27,7 @@ export default function AdminLogin() {
           {error && <div className="error-box">{error}</div>}
           <button className="btn btn-black full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </form>
-        {/*}
-        <div className="mode-note">
-          <strong>{modeLabel} mode</strong>
-          {!isFirebaseMode && <span>Demo login: <b>admin@eduvos.local</b> / <b>admin123</b></span>}
-          {isFirebaseMode && <>
-            <span>Project: <b>{diagnostics.projectId}</b></span>
-            <span>Realtime DB: <b>{diagnostics.databaseUrl}</b></span>
-            <span>Admin access is verified from Firestore. Realtime Database does not need a separate admin record.</span>
-            <span>Use your Email/Password account from Firebase Authentication.</span>
-          </>}
-        </div>*/}
+        {!isFirebaseMode && <div className="mode-note"><span>Demo mode</span></div>}
       </section>
     </main>
   )

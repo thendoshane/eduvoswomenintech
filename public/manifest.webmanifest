@@ -1,11 +1,11 @@
 {
-  "name": "Women in Tech Summit Live",
-  "short_name": "WIT Live",
+  "name": "Eduvos Women in Tech Summit",
+  "short_name": "WIT Summit",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#173a67",
   "icons": [
-    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

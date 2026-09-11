@@ -49,6 +49,22 @@
           }
         },
 
+        "auditLogs": {
+          ".read": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+          "$logId": {
+            ".write": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+            ".validate": "newData.hasChildren(['action','entity','summary','createdAt'])"
+          }
+        },
+
+        "errorReports": {
+          ".read": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
+          "$reportId": {
+            ".write": "auth != null && !data.exists()",
+            ".validate": "newData.hasChildren(['context','friendlyMessage','technicalMessage','createdAt'])"
+          }
+        },
+
         "concerns": {
           ".read": "auth != null && auth.token.firebase.sign_in_provider == 'password'",
           "$concernId": {

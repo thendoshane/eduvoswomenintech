@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAppData } from '../context'
 import Icon from '../components/Icon'
-import { saveLiveNotice } from '../lib/dataService'
+import { saveLiveNotice, friendlyErrorMessage, reportError } from '../lib/dataService'
 
 export default function AnnouncementsPanel(){
   const { event }=useAppData()
@@ -22,7 +22,7 @@ export default function AnnouncementsPanel(){
     try{
       await saveLiveNotice({message:message.trim(),active:true})
       setActive(true);setSaved(true)
-    }catch(err){alert(err.message||'Could not publish notification.')}
+    }catch(err){alert(friendlyErrorMessage(err)); reportError(err,'admin-notice-publish').catch(()=>{})}
     finally{setBusy(false)}
   }
 
@@ -32,7 +32,7 @@ export default function AnnouncementsPanel(){
     try{
       await saveLiveNotice({message:message.trim(),active:!active})
       setActive(!active);setSaved(true)
-    }catch(err){alert(err.message||'Could not change notification status.')}
+    }catch(err){alert(friendlyErrorMessage(err)); reportError(err,'admin-notice-toggle').catch(()=>{})}
     finally{setBusy(false)}
   }
 
@@ -42,7 +42,7 @@ export default function AnnouncementsPanel(){
     try{
       await saveLiveNotice({message:'',active:false})
       setMessage('');setActive(false);setSaved(true)
-    }catch(err){alert(err.message||'Could not clear notification.')}
+    }catch(err){alert(friendlyErrorMessage(err)); reportError(err,'admin-notice-clear').catch(()=>{})}
     finally{setBusy(false)}
   }
 

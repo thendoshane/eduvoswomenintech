@@ -22,7 +22,9 @@ export function createDemoData() {
       organisation: 'Industry Partner',
       bio: 'Technology professional focused on leadership, digital transformation and creating pathways for women in technology.',
       imageUrl: '',
-      linkedinUrl: ''
+      linkedinUrl: '',
+      category:'Speaker',
+      showOnPanel:true
     },
     {
       id: 'speaker_naledi',
@@ -31,7 +33,9 @@ export function createDemoData() {
       organisation: 'Technology Industry',
       bio: 'AI and data practitioner sharing practical lessons on skills, career growth and the future of work.',
       imageUrl: '',
-      linkedinUrl: ''
+      linkedinUrl: '',
+      category:'Speaker',
+      showOnPanel:true
     },
     {
       id: 'speaker_ayanda',
@@ -40,7 +44,9 @@ export function createDemoData() {
       organisation: 'Digital Security',
       bio: 'Cybersecurity specialist passionate about secure innovation, mentorship and expanding participation in technology careers.',
       imageUrl: '',
-      linkedinUrl: ''
+      linkedinUrl: '',
+      category:'Speaker',
+      showOnPanel:true
     }
   ]
 
@@ -105,12 +111,24 @@ export function createDemoData() {
       name: 'Eduvos Women in Tech Summit',
       organiser: 'Eduvos',
       tagline: 'Women Shaping the Future of Technology.',
+      homeIntro: 'Women in IT Summit is a premier platform designed to inspire, empower, and connect women across the technology ecosystem around South Africa. The summit seeks to address the gender gap in technology by creating opportunities for learning, mentorship, networking, leadership development, and industry collaboration. The event will bring together students, academics, technology professionals, entrepreneurs, executives, policymakers, and industry leaders to engage in meaningful conversations about the future of technology and the critical role women play in driving innovation.\n\nThrough keynote presentations, panel discussions, mentorship sessions, and networking opportunities, participants will gain valuable insights, practical skills, and professional connections that support their growth within the digital economy as females.',
       date: '2026-09-21',
       venue: 'Eduvos Bedfordview Campus',
-      locationNote: "Lv201, Building E, Gillooly's View Office Park, Osborne Lane, Bedfordview · 08:00–16:00 · Hybrid event",
+      locationNote: "Lv201, Building E, Gillooly's View Office Park, Osborne Lane, Bedfordview",
+      eventFormat:'Hybrid event',
+      startTime:'08:00',
+      endTime:'16:00',
       hashtag: '#WomenInTech',
       wifiName: '',
       wifiPassword: '',
+      contacts: [
+        { name:'Siba Maphukata', role:'Chairperson', email:'siba.maphukata@eduvos.com', phone:'', imageUrl:'' },
+        { name:'Danica Heusdens', role:'Deputy Chairperson', email:'danica.heusdens@eduvos.com', phone:'', imageUrl:'' },
+        { name:'Yvonne Fayeti', role:'Treasurer', email:'yvonne.fayeti@eduvos.com', phone:'', imageUrl:'' },
+        { name:'Siyaxolisa Dayisi', role:'Project Analyst', email:'siyaxolisa.dayisi@eduvos.com', phone:'' }
+      ],
+      streamUrl: '',
+      streamEmbedUrl: '',
       contactName: 'Event Team',
       contactPhone: '',
       contactEmail: '',

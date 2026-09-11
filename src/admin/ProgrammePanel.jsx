@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { useAppData } from '../context'
 import Icon from '../components/Icon'
-import { deleteSession, saveSession } from '../lib/dataService'
+import { deleteSession, saveSession, friendlyErrorMessage, reportError } from '../lib/dataService'
 import { formatTime, sessionState, toLocalInputValue } from '../lib/utils'
 
-const blank = () => ({ title:'', description:'', startAt:'', endAt:'', room:'Main Stage', type:'Session', speakerIds:[], manualStatus:'auto', qnaEnabled:true, streamUrl:'' })
+const blank = () => ({ title:'', description:'', startAt:'', endAt:'', room:'Main Stage', type:'Session', speakerIds:[], manualStatus:'auto', qnaEnabled:true, streamUrl:'', streamEmbedUrl:'' })
 
 export default function ProgrammePanel() {
   const { sessions, speakers, now, liveState } = useAppData()
@@ -27,7 +27,7 @@ export default function ProgrammePanel() {
         endAt: new Date(form.endAt).toISOString()
       })
       setEditing(null)
-    } catch (err) { alert(err.message || 'Could not save session.') }
+    } catch (err) { alert(friendlyErrorMessage(err)); reportError(err,'admin-programme-save').catch(()=>{}) }
     finally { setBusy(false) }
   }
 
@@ -56,7 +56,7 @@ export default function ProgrammePanel() {
         <label>Room / stage<input value={form.room} onChange={e=>setForm({...form,room:e.target.value})}/></label>
         <label>Session type<input value={form.type} onChange={e=>setForm({...form,type:e.target.value})} placeholder="Keynote, Panel, Break…"/></label>
         <label>Status override<select value={form.manualStatus} onChange={e=>setForm({...form,manualStatus:e.target.value})}><option value="auto">Automatic by time</option><option value="live">Force live</option><option value="delayed">Delayed</option><option value="finished">Finished</option><option value="cancelled">Cancelled</option></select></label>
-        <label>Stream URL (optional)<input type="url" value={form.streamUrl||''} onChange={e=>setForm({...form,streamUrl:e.target.value})} placeholder="Teams / YouTube / Vimeo link"/></label>
+        <label>Live join URL<input type="url" value={form.streamUrl||''} onChange={e=>setForm({...form,streamUrl:e.target.value})} placeholder="Teams meeting / event link"/></label><label>Embeddable stream URL<input type="url" value={form.streamEmbedUrl||''} onChange={e=>setForm({...form,streamEmbedUrl:e.target.value})} placeholder="Only if the provider allows iframe embedding"/></label>
         <label className="span-2">Description<textarea rows="4" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></label>
         <fieldset className="span-2"><legend>Speakers</legend><div className="check-grid">{speakers.map(sp=><label className="check-item" key={sp.id}><input type="checkbox" checked={form.speakerIds.includes(sp.id)} onChange={()=>toggleSpeaker(sp.id)}/><span>{sp.name}</span></label>)}{!speakers.length && <span className="muted">Add speakers first, then link them here.</span>}</div></fieldset>
         <label className="toggle-row span-2"><input type="checkbox" checked={Boolean(form.qnaEnabled)} onChange={e=>setForm({...form,qnaEnabled:e.target.checked})}/><span><strong>Enable live Q&A</strong><small>Attendees can submit and upvote anonymous questions.</small></span></label>

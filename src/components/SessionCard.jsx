@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom'
 import Icon from './Icon'
 import SpeakerAvatar from './SpeakerAvatar'
 import { formatTime, sessionState } from '../lib/utils'
+import { normalizeExternalUrl } from '../lib/links'
 
-export default function SessionCard({ session, speakerMap, now = new Date(), liveState = {}, compact = false }) {
+export default function SessionCard({ session, speakerMap, now = new Date(), liveState = {}, compact = false, event = null, showActions = false }) {
   const state = sessionState(session, now, liveState)
   const speakers = (session.speakerIds || []).map(id => speakerMap[id]).filter(Boolean)
-  return (
+  const join = normalizeExternalUrl(session.streamUrl || event?.streamUrl || '')
+
+  const card = (
     <Link to={`/session/${session.id}`} className={`session-card ${compact ? 'compact' : ''} state-${state}`}>
       <div className="session-time">
         <strong>{formatTime(session.startAt)}</strong>
@@ -34,5 +37,17 @@ export default function SessionCard({ session, speakerMap, now = new Date(), liv
       </div>
       <Icon name="arrow" size={20}/>
     </Link>
+  )
+
+  if (!showActions) return card
+
+  return (
+    <article className="programme-session-wrap">
+      {card}
+      {(session.qnaEnabled || join) && <div className="programme-session-actions">
+        {session.qnaEnabled && <Link className="programme-action primary" to={`/qna/${session.id}`}><Icon name="message" size={15}/> Live Q&A</Link>}
+        {join && <a className="programme-action" href={join} target="_blank" rel="noreferrer"><Icon name="video" size={15}/> Watch online</a>}
+      </div>}
+    </article>
   )
 }
